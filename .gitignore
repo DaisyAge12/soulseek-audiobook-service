@@ -1,0 +1,33 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime data
+*.db
+*.sqlite
+*.sqlite3
+*.log
+logs/
+downloads/
+completed-audiobooks/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

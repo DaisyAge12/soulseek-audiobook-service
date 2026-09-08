@@ -1,0 +1,31 @@
+# Source control
+.git
+.gitignore
+.github/
+
+# Never include secrets
+.env
+.env.*
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime and development files
+*.db
+*.sqlite
+*.sqlite3
+*.log
+logs/
+downloads/
+completed-audiobooks/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+tests/
+requirements-dev.txt
+README*.md
+docker-compose*.yml

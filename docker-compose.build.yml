@@ -1,0 +1,6 @@
+services:
+  sas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: soulseek-audiobook-service:local

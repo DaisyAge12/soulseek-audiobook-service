@@ -1,0 +1,34 @@
+services:
+  sas:
+    image: ${SAS_IMAGE:-ghcr.io/your-github-user/soulseek-audiobook-service:latest}
+    container_name: soulseek-audiobook-service
+    restart: unless-stopped
+    ports:
+      - "${SAS_PORT:-8099}:8099"
+    env_file:
+      - .env
+    environment:
+      DATABASE_PATH: /data/sas.db
+      LOG_FILE: /logs/sas.log
+      DOWNLOAD_ROOT: /downloads
+      COMPLETED_AUDIOBOOKS_ROOT: /completed-audiobooks
+    volumes:
+      - sas-data:/data
+      - sas-logs:/logs
+      - ${SLSKD_DOWNLOAD_PATH:?Set SLSKD_DOWNLOAD_PATH in .env}:/downloads
+      - ${COMPLETED_AUDIOBOOKS_PATH:?Set COMPLETED_AUDIOBOOKS_PATH in .env}:/completed-audiobooks
+    networks:
+      - audiobook-stack
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    init: true
+
+volumes:
+  sas-data:
+  sas-logs:
+
+networks:
+  audiobook-stack:
+    name: audiobook-stack
