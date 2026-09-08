@@ -31,7 +31,7 @@ docker compose logs -f sas
 ## Pull and run
 
 ```bash
-docker pull ghcr.io/<owner>/<repository>:latest
+docker pull ghcr.io//DaisyAge12/soulseek-audiobook-service:latest
 cp .env.example .env
 # Edit .env and set SAS_IMAGE to the published image.
 docker compose up -d
