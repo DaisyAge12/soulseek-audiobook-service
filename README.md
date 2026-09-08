@@ -1,7 +1,8 @@
 # Soulseek Audiobook Service
 
-Containerized FastAPI service for SAS, published through GitHub Container Registry.
-
+Containerized FastAPI service for SAS, published through GitHub Container Registry. SAS acts as the intermediary between Audiobook Request and slskd by picking up the ABR API request and querying slskd for the audiobook. The application is designed to score potential matches
+and rank them, with single file M4B matches scoring the highest.
+Lots of AI used, almost exclusively. Use at your own risk.
 ## Security
 
 This repository must not contain real API keys, JWT secrets, passwords, private keys, populated `.env` files, databases, or logs. Copy `.env.example` to `.env` and set credentials only on the deployment host.
@@ -27,16 +28,6 @@ curl http://localhost:8099/health
 docker compose logs -f sas
 ```
 
-## Publish through GitHub
-
-1. Create a GitHub repository and copy these files into it.
-2. Put all required Python modules in `app/`.
-3. Commit and push to the `main` branch.
-4. The workflow builds `linux/amd64` and `linux/arm64` images and publishes them to `ghcr.io/<owner>/<repository>`.
-5. In the GitHub package settings, set package visibility to public if anonymous pulls are required.
-
-No registry password is hard-coded. GitHub Actions authenticates with its temporary `GITHUB_TOKEN`.
-
 ## Pull and run
 
 ```bash
@@ -46,13 +37,6 @@ cp .env.example .env
 docker compose up -d
 ```
 
-For a private package, authenticate first:
-
-```bash
-echo "$GHCR_TOKEN" | docker login ghcr.io -u <github-user> --password-stdin
-```
-
-Use a GitHub token with only the minimum package-read permission required.
 
 ## Required application modules
 
