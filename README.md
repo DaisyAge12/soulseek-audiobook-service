@@ -4,8 +4,6 @@ Containerized FastAPI service for SAS, published through GitHub Container Regist
 and rank them, with single file M4B matches scoring the highest.
 Lots of AI used, almost exclusively. Use at your own risk.
 
-## Security
-
 Pull and run
 
 ```bash
