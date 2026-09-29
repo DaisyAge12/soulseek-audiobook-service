@@ -7,7 +7,7 @@ Lots of AI used, almost exclusively. Use at your own risk.
 Pull and run
 
 ```bash
-docker pull ghcr.io//DaisyAge12/soulseek-audiobook-service:latest
+docker pull ghcr.io/daisyage12/soulseek-audiobook-service:latest
 cp .env.example .env
 # Edit .env and set SAS_IMAGE to the published image.
 docker compose up -d
