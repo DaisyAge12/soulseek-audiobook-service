@@ -1,6 +1,6 @@
 services:
   sas:
-    image:  ${SAS_IMAGE:-ghcr.io/daisyage12/soulseek-audiobook-service:latest}
+    image: ghcr.io/daisyage12/soulseek-audiobook-service:latest
     container_name: soulseek-audiobook-service
     restart: unless-stopped
     ports: ["${SAS_PORT:-8099}:8099"]
