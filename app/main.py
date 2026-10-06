@@ -48,7 +48,7 @@ logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
 log = logging.getLogger("sas.api")
 db = DB(settings.database_path)
-db.init()
+db.init(convert_legacy=settings.no_match_retry_enabled)
 client = Client(settings)
 worker = Worker(db, client, settings)
 abr_client = AbrClient(settings)
@@ -180,6 +180,8 @@ def get_job(job_id: str):
         "current_candidate": job["current_candidate"],
         "current_attempt": job["current_attempt"],
         "progress": job["progress"],
+        "retry_count": job.get("retry_count") or 0,
+        "next_retry_at": job.get("next_retry_at"),
         "error": None if duplicate_detail else job["error"],
         "duplicate": duplicate_detail,
         "created_at": job["created_at"],

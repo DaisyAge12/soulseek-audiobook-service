@@ -14,24 +14,25 @@ class Settings(BaseSettings):
     database_path: str = "/data/sas.db"
     log_file: str = "/logs/sas.log"
     download_root: str = "/downloads"
-
     enable_post_download_move: bool = False
     completed_audiobooks_root: str = "/completed-audiobooks"
     move_optional_files: bool = True
     duplicate_policy: str = "skip"
-
     duplicate_detection_enabled: bool = True
     duplicate_policy_on_request: str = "complete"
+
+    no_match_notify_enabled: bool = True
+    no_match_retry_enabled: bool = True
+    no_match_retry_interval_seconds: int = 21600
+    no_match_retry_max: int = 0
 
     max_attempts_per_candidate: int = 3
     max_candidates: int = 5
     min_candidate_score: float = 25
-
     transfer_poll_seconds: int = 10
     stall_timeout_seconds: int = 900
     candidate_timeout_seconds: int = 21600
     missing_transfer_grace_seconds: int = 45
-
     search_timeout_seconds: int = 45
     search_response_limit: int = 100
     search_candidates_per_query: int = 5
@@ -48,6 +49,11 @@ class Settings(BaseSettings):
     abr_import_manual_requests: bool = True
     abr_auto_mark_downloaded: bool = True
     abr_callback_failure_fatal: bool = False
+
+    discord_notify_enabled: bool = False
+    discord_webhook_url: str = ""
+    discord_notify_delay_seconds: int = 300
+    discord_timeout_seconds: int = 30
 
     worker_poll_seconds: int = 2
     log_level: str = "INFO"

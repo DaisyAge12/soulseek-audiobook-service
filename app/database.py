@@ -1,7 +1,7 @@
 import json
 import sqlite3
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 LOCK = threading.Lock()
@@ -12,6 +12,13 @@ RECOVERABLE_STATES = (
     "downloading",
     "retrying",
     "falling_back",
+)
+
+# Columns added after the first release; created automatically on startup.
+MIGRATION_COLUMNS = (
+    ("retry_count", "INTEGER DEFAULT 0"),
+    ("next_retry_at", "TEXT"),
+    ("no_match_notified", "INTEGER DEFAULT 0"),
 )
 
 
@@ -28,7 +35,7 @@ class DB:
         connection.row_factory = sqlite3.Row
         return connection
 
-    def init(self):
+    def init(self, convert_legacy=False):
         Path(self.p).parent.mkdir(parents=True, exist_ok=True)
         with self.con() as connection:
             connection.execute(
@@ -48,6 +55,13 @@ class DB:
                 )
                 """
             )
+            existing = {
+                row["name"] for row in connection.execute("PRAGMA table_info(jobs)")
+            }
+            for name, ddl in MIGRATION_COLUMNS:
+                if name not in existing:
+                    connection.execute(f"ALTER TABLE jobs ADD COLUMN {name} {ddl}")
+
             placeholders = ",".join("?" for _ in RECOVERABLE_STATES)
             connection.execute(
                 f"""
@@ -59,6 +73,26 @@ class DB:
                 """,
                 (now(), *RECOVERABLE_STATES),
             )
+
+            if convert_legacy:
+                # Old "failed: no match" jobs become retryable. They are marked
+                # as already notified so old requests don't spam Discord, and
+                # the first retry is delayed so the ABR poller can cancel
+                # requests that are no longer pending.
+                first_retry = (
+                    datetime.now(timezone.utc) + timedelta(seconds=120)
+                ).isoformat()
+                connection.execute(
+                    """
+                    UPDATE jobs
+                    SET status='no_match', next_retry_at=?, no_match_notified=1,
+                        updated_at=?
+                    WHERE status='failed'
+                      AND (error LIKE 'No candidate met minimum score%'
+                           OR error LIKE 'All candidates exhausted%')
+                    """,
+                    (first_retry, now()),
+                )
 
     def create(self, job_id, external_request_id, payload):
         with LOCK, self.con() as connection:
@@ -91,6 +125,39 @@ class DB:
             "SELECT * FROM jobs WHERE external_request_id=?",
             (external_request_id,),
         )
+
+    def list_status(self, status):
+        with self.con() as connection:
+            rows = connection.execute(
+                "SELECT * FROM jobs WHERE status=?", (status,)
+            ).fetchall()
+            return [dict(row) for row in rows]
+
+    def requeue_due(self):
+        """Move no_match jobs whose retry time has passed back to 'received'."""
+        current = now()
+        with LOCK, self.con() as connection:
+            ids = [
+                row["id"]
+                for row in connection.execute(
+                    "SELECT id FROM jobs WHERE status='no_match' "
+                    "AND next_retry_at IS NOT NULL AND next_retry_at <= ?",
+                    (current,),
+                )
+            ]
+            for job_id in ids:
+                connection.execute(
+                    """
+                    UPDATE jobs
+                    SET status='received', candidates_json=NULL,
+                        current_candidate=0, current_attempt=0, progress=0,
+                        retry_count=COALESCE(retry_count,0)+1,
+                        next_retry_at=NULL, updated_at=?
+                    WHERE id=?
+                    """,
+                    (current, job_id),
+                )
+        return ids
 
     def next(self):
         return self.one(
